@@ -222,7 +222,7 @@ int main(int argc, char** argv) {
   }
 
   std::ofstream sample_file;
-  samplsample.open("sampling.dat");
+  sample_file.open("sampling.dat");
   for (int i = 0; i < N; i++) {
     sample_file << i << '\t' << (Grid[i][N/2].rho - 1.0) << std::endl;
   }
