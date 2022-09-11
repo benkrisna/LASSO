@@ -12,8 +12,9 @@ add_executable(lasso lasso.cpp)
 #find_package(OpenGL REQUIRED)
 #find_package(GLUT REQUIRED)
 find_package(HDF5 REQUIRED)
+find_package(toml11 REQUIRED)
 
 #include_directories(${OPENGL_INCLUDE_DIRS} ${GLUT_INCLUDE_DIRS})
 include_directories(${HDF5_INCLUDE_DIRS})
 
-target_link_libraries(lasso ${HDF5_CXX_LIBRARIES}) # ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${MYLIBS})
+target_link_libraries(lasso ${HDF5_CXX_LIBRARIES} ${TOML11_LIBRARIES}) # ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} ${MYLIBS})

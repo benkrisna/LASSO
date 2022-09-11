@@ -4,6 +4,7 @@
 #include <vector>
 #include <math.h>
 #include <H5Cpp.h>
+#include <toml.hpp>
 
 #define PI 3.14159265
 /*
@@ -37,8 +38,6 @@ const float nu = 0.5;
 const float tau_s = (6. * nu + 1.) / 2.;
 
 namespace parameters {
-  const float p_left = 0.1;
-  const float p_right = 0.8;
   const bool sourceTerms = true;
   struct monopole {
     const float amplitude = 0.01;
@@ -72,11 +71,32 @@ int main(int argc, char** argv) {
 
   std::cout << "Created by Benyamin Krisna" << std::endl;
 
-  const int N = 32; // TODO: EXAMPLE!
+  // Parse input toml file
+  if (argc < 2) {
+    std::cout << "Please enter the input toml file!" << std::endl;
+    return 0;
+  }
+
+  auto inputfile = toml::parse(argv[1]);
+
+  const int N = toml::find<int>(inputfile, "N");
+  const float Lx = toml::find<float>(inputfile, "Lx");
+  const float Ly = toml::find<float>(inputfile, "Ly");
+
+  const float dx = Lx / N;
+  const float dy = Ly / N;
+
+  // Grid Initialization
+  cell Grid [N][N];
+  for (int i = 0; i < N; i++) {
+    for (int j = 0; j < N; j++) {
+      Grid[i][j].x = - Lx / 2.0 + i * dx; // CAUTION: non-lattice units!
+      Grid[i][j].y = - Ly / 2.0 + i * dy; // CAUTION: non-lattice units!
+    }
+  }
 
 
   // Initialization
-  cell Grid [N][N];
   for (int i = 0; i < N; i++) {
     for (int j = 0; j < N; j++) {
       /*
@@ -216,7 +236,7 @@ int main(int argc, char** argv) {
   output_file.open("results.dat");
   for (int i = 0; i < N; i++) {
     for (int j = 0; j < N; j++) {
-      output_file << i <<  '\t' << j << '\t' << (Grid[i][j].rho - 1.0) << std::endl;
+      output_file << Grid[i][j].x <<  '\t' << Grid[i][j].y << '\t' << (Grid[i][j].rho - 1.0) << std::endl;
     }
     output_file << std::endl;
   }
