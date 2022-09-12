@@ -34,16 +34,6 @@ const float c [2][9] = { {0. , 1. , 0. , -1. , 0. , 1. , -1. , -1. , 1.},
 const float cs = sqrt(1. / 3.);
 const float csSq = 1. / 3.;
 
-const float nu = 0.5;
-const float tau_s = (6. * nu + 1.) / 2.;
-
-namespace parameters {
-  const bool sourceTerms = true;
-  struct monopole {
-    const float amplitude = 0.01;
-    const float frequency = 0.25;
-  } monopole1;
-}
 
 struct cell {
   float rho;
@@ -85,6 +75,22 @@ int main(int argc, char** argv) {
 
   const float dx = Lx / N;
   const float dy = Ly / N;
+
+  const float nu = toml::find<float>(inputfile, "nu");
+  const float tau_s = (6. * nu + 1.) / 2.;
+
+  bool sourceTerms = inputfile.contains("sourceTerms");
+  std::string sourceTermType;
+
+  float monopole_amplitude;
+  float monopole_frequency;
+  if (sourceTerms) { 
+    sourceTermType = toml::find<std::string>(inputfile, "sourceTerms");
+    if (sourceTermType == "monopole") {
+      monopole_amplitude = toml::find<float>(inputfile, "monopole_amplitude"); 
+      monopole_frequency = toml::find<float>(inputfile, "monopole_frequency"); 
+    }
+  }
 
   // Grid Initialization
   cell Grid [N][N];
@@ -142,7 +148,7 @@ int main(int argc, char** argv) {
   // 7. Repeat!
 
   int globalTimeStep = 0;
-  int tMax = 2000;
+  const int tMax = toml::find<int>(inputfile, "tMax");
 
   while (globalTimeStep < tMax) {
     // 1. Compute macroscopic moments from the distribution
@@ -186,10 +192,12 @@ int main(int argc, char** argv) {
     }
     
     // 4b. Any source terms / forces?
-    if (parameters::sourceTerms) {
-      //TODO: very  hard coded!
-      for (int dist_count = 0; dist_count < nDist; dist_count++) {
-        Grid[N/2][N/2].fstar[dist_count] += w[dist_count] * parameters::monopole1.amplitude * sin(2.0 * PI * parameters::monopole1.frequency);
+    if (sourceTerms) {
+      if (sourceTermType == "monopole") {
+        //TODO: very  hard coded!
+        for (int dist_count = 0; dist_count < nDist; dist_count++) {
+          Grid[N/2][N/2].fstar[dist_count] += w[dist_count] * monopole_amplitude * sin(2.0 * PI * monopole_frequency);
+        }
       }
     }
 
